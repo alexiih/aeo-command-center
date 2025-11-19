@@ -1,19 +1,32 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Trophy, TrendingUp, Target, AlertCircle } from 'lucide-react';
-import { MOCK_KEYWORDS } from '@/lib/mockData';
+import { api } from '@/lib/api';
+import { KeywordRanking } from '@/lib/types';
 
 export default function CompetitorAnalysis() {
     const [selectedCompetitor, setSelectedCompetitor] = useState('Nybolig');
+    const [keywords, setKeywords] = useState<KeywordRanking[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const data = await api.getKeywords();
+            setKeywords(data);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
 
     const competitors = ['Nybolig', 'EDC', 'Boliga', 'Home.dk'];
 
     // Calculate Win/Loss stats
-    const totalKeywords = MOCK_KEYWORDS.length;
-    const boligsidenWins = MOCK_KEYWORDS.filter(k => k.boligsidenShare > k.competitorShares[selectedCompetitor as keyof typeof k.competitorShares]).length;
+    const totalKeywords = keywords.length;
+    const boligsidenWins = keywords.filter(k => k.boligsidenShare > k.competitorShares[selectedCompetitor as keyof typeof k.competitorShares]).length;
     const competitorWins = totalKeywords - boligsidenWins;
-    const winRate = Math.round((boligsidenWins / totalKeywords) * 100);
+    const winRate = totalKeywords > 0 ? Math.round((boligsidenWins / totalKeywords) * 100) : 0;
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
@@ -28,8 +41,8 @@ export default function CompetitorAnalysis() {
                             key={comp}
                             onClick={() => setSelectedCompetitor(comp)}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedCompetitor === comp
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                ? 'bg-blue-600 text-white shadow-lg'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
                                 }`}
                         >
                             {comp}
@@ -77,8 +90,17 @@ export default function CompetitorAnalysis() {
                 <div className="p-6">
                     <div className="space-y-6">
                         {['Buying', 'Selling', 'Market Data', 'Luxury', 'Rentals'].map((category) => {
-                            // Mock calculation for category share
-                            const randomShare = Math.floor(Math.random() * 40) + 30;
+                            // Calculate category share
+                            const categoryKeywords = keywords.filter(k => k.category === category);
+                            if (categoryKeywords.length === 0) return null;
+
+                            const avgBoligsidenShare = categoryKeywords.reduce((acc, k) => acc + k.boligsidenShare, 0) / categoryKeywords.length;
+                            const avgCompetitorShare = categoryKeywords.reduce((acc, k) => acc + (k.competitorShares[selectedCompetitor as keyof typeof k.competitorShares] || 0), 0) / categoryKeywords.length;
+
+                            // Normalize to 100% for the bar visualization (relative strength)
+                            const total = avgBoligsidenShare + avgCompetitorShare;
+                            const relativeBoligsiden = total > 0 ? (avgBoligsidenShare / total) * 100 : 50;
+
                             return (
                                 <div key={category} className="space-y-2">
                                     <div className="flex justify-between text-sm">
@@ -87,16 +109,16 @@ export default function CompetitorAnalysis() {
                                     </div>
                                     <div className="h-4 bg-slate-800 rounded-full overflow-hidden flex">
                                         <div
-                                            className="h-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white/80"
-                                            style={{ width: `${randomShare}%` }}
+                                            className="h-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white/80 transition-all duration-500"
+                                            style={{ width: `${relativeBoligsiden}%` }}
                                         >
-                                            {randomShare}%
+                                            {Math.round(relativeBoligsiden)}%
                                         </div>
                                         <div
-                                            className="h-full bg-slate-600 flex items-center justify-center text-[10px] font-bold text-white/80"
-                                            style={{ width: `${100 - randomShare}%` }}
+                                            className="h-full bg-slate-600 flex items-center justify-center text-[10px] font-bold text-white/80 transition-all duration-500"
+                                            style={{ width: `${100 - relativeBoligsiden}%` }}
                                         >
-                                            {100 - randomShare}%
+                                            {Math.round(100 - relativeBoligsiden)}%
                                         </div>
                                     </div>
                                 </div>

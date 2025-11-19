@@ -1,13 +1,31 @@
-import React from 'react';
-import { MOCK_KEYWORDS } from '@/lib/mockData';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { KeywordRanking } from '@/lib/types';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import Link from 'next/link';
 
 const KeywordMonitor = () => {
+    const [keywords, setKeywords] = useState<KeywordRanking[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const data = await api.getKeywords();
+            // Take top 5 for the widget
+            setKeywords(data.slice(0, 5));
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
+
     return (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
             <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Golden Keywords</h3>
-                <button className="text-sm text-blue-400 hover:text-blue-300 font-medium">View All (500+)</button>
+                <Link href="/keyword-monitor" className="text-sm text-blue-400 hover:text-blue-300 font-medium">View All</Link>
             </div>
 
             <div className="overflow-x-auto">
@@ -22,7 +40,7 @@ const KeywordMonitor = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
-                        {MOCK_KEYWORDS.map((keyword) => (
+                        {keywords.map((keyword) => (
                             <tr key={keyword.id} className="hover:bg-slate-800/30 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                                     {keyword.keyword}

@@ -1,8 +1,13 @@
+'use client';
+
 import React from 'react';
 import { LayoutDashboard, Search, BarChart3, Settings, Zap, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const Sidebar = () => {
+    const pathname = usePathname();
+
     return (
         <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col flex-shrink-0">
             <div className="p-6 flex items-center gap-3">
@@ -16,9 +21,9 @@ const Sidebar = () => {
                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
                     Intelligence
                 </div>
-                <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" href="/" active />
-                <NavItem icon={<Search size={20} />} label="Keyword Monitor" href="#" />
-                <NavItem icon={<BarChart3 size={20} />} label="Competitor Analysis" href="/competitor-analysis" />
+                <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" href="/" active={pathname === '/'} />
+                <NavItem icon={<Search size={20} />} label="Keyword Monitor" href="/keyword-monitor" active={pathname === '/keyword-monitor'} />
+                <NavItem icon={<BarChart3 size={20} />} label="Competitor Analysis" href="/competitor-analysis" active={pathname === '/competitor-analysis'} />
 
                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-8 mb-4 px-2">
                     Configuration

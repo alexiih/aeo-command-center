@@ -2,7 +2,7 @@ export type LLMModel = 'GPT-5.1' | 'Sonnet 4.5' | 'Perplexity' | 'Gemini 2.5 Pro
 
 export type Competitor = 'Boligsiden' | 'Nybolig' | 'EDC' | 'Boliga' | 'Home.dk';
 
-export type KeywordCategory = 'Buying' | 'Selling' | 'Market Data' | 'Luxury' | 'Rentals';
+export type KeywordCategory = 'Buying' | 'Selling' | 'Market Data' | 'Luxury' | 'Rentals' | 'Research' | 'Competitor';
 
 export interface KeywordRanking {
   id: string;

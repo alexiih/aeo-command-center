@@ -1,18 +1,33 @@
-import React from 'react';
-import { MOCK_KEYWORDS } from '@/lib/mockData';
-import { Competitor } from '@/lib/types';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { Competitor, KeywordRanking } from '@/lib/types';
 
 const BattlefieldHeatmap = () => {
-    const categories = Array.from(new Set(MOCK_KEYWORDS.map((k) => k.category)));
+    const [keywords, setKeywords] = useState<KeywordRanking[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const data = await api.getKeywords();
+            setKeywords(data);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
+
+    const categories = Array.from(new Set(keywords.map((k) => k.category)));
     const competitors: Competitor[] = ['Boligsiden', 'Nybolig', 'EDC', 'Boliga', 'Home.dk'];
 
     // Calculate average share per category per competitor
     const heatMapData = categories.map((category) => {
-        const keywords = MOCK_KEYWORDS.filter((k) => k.category === category);
+        const categoryKeywords = keywords.filter((k) => k.category === category);
         const scores = competitors.map((comp) => {
             const avg =
-                keywords.reduce((acc, curr) => acc + (curr.competitorShares[comp] || 0), 0) /
-                keywords.length;
+                categoryKeywords.reduce((acc, curr) => acc + (curr.competitorShares[comp] || 0), 0) /
+                categoryKeywords.length;
             return { competitor: comp, score: avg };
         });
         return { category, scores };

@@ -10,12 +10,23 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import { MOCK_HISTORY } from '@/lib/mockData';
+import { api } from '@/lib/api';
+import { HistoricalDataPoint } from '@/lib/types';
 
 const TrendChart = () => {
     const [range, setRange] = useState('30');
+    const [data, setData] = useState<HistoricalDataPoint[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const data = range === '7' ? MOCK_HISTORY.slice(-7) : MOCK_HISTORY;
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const history = await api.getHistory(parseInt(range));
+            setData(history);
+            setLoading(false);
+        };
+        fetchData();
+    }, [range]);
 
     return (
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 h-[400px]">
